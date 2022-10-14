@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def resume_time(time_list, npage_list, error_cant):
-    fig, axs = plt.subplots(2, 2)
+    fig, axs = plt.subplots(2, 2, figsize=(12, 12))
     fig.suptitle(f"Rendimiento / Archivos:{len(npage_list)} / Paginas:{sum(npage_list)} / "
                  f"Tiempo total: {int(sum(time_list))}s \n"
                  f"({round(sum(time_list) / len(npage_list), 4)} s/archivo) "
@@ -47,36 +47,51 @@ def resume_time(time_list, npage_list, error_cant):
     plt.savefig('/home/david/Documents/results_pdf/performance.png')
     plt.close()
 
-def resume_quality(cat_totals, npage_list):
-    fig, axs = plt.subplots(1, 3)
 
-    fig.suptitle(f"Categoria / Archivos:{np.sum(cat_totals)} / Paginas:{sum(npage_list)} / "
+def resume_quality(cat_totals, npage_list):
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))
+
+    fig.suptitle(f"Categoria / Archivos:{len(npage_list)} / Paginas:{sum(npage_list)} / "
                  f"({round(sum(npage_list) / len(npage_list), 1)} pags/archivo) \n")
 
     axs[0].pie(cat_totals,
-               labels = [
-                   'Blancos',
-                   'Optimo',
-                   'Medio',
-                   'Baja',
-                   'Revision',
-                   'Digitalizado'],
-               autopct = lambda data: f'{round(data/np.sum(cat_totals),2)}%')
-    axs[0].set_title("Porcentaje de categorías (páginas)")
+               autopct=lambda p: '{p:.2f}% ({v:d})'.format(p=p, v=int(p*sum(cat_totals)/100)),
+               pctdistance=1.1
+               )
+    axs[0].legend([
+        'Blancos',
+        'Optimo',
+        'Medio',
+        'Baja',
+        'Revision',
+        'Digitalizado'],
+        loc='best')
+    axs[0].set_title("Clasificacion\n(paginas)")
 
-    axs[1].bar(cat_totals/np.sum(npage_list))
-    axs[1].set_title("No. de hojas (por categoria) por archivo")
+    axs[1].bar([
+        'Blancos',
+        'Optimo',
+        'Medio',
+        'Baja',
+        'Revision',
+        'Digitalizado'],
+        cat_totals / np.sum(npage_list)
+    )
+    axs[1].set_title("Clasificación\npor archivo")
     axs[1].set_xlabel("Categoría")
     axs[1].set_ylabel("No. paginas")
     axs[1].grid(True)
 
-    axs[2].pie(cat_totals[3:4],
-               labels = [
-                   'Baja',
-                   'Revision'],
-               autopct = lambda data: f'{round(data/np.sum(cat_totals[3:4]),2)}%')
-    axs[2].set_title("Porcentaje de revision (calidad baja)")
+    if np.sum(cat_totals[3:5]) > 0:
+        axs[2].pie(cat_totals[3:5],
+                   autopct=lambda p: '{p:.2f}% ({v:d})'.format(p=p, v=int(p*sum(cat_totals[3:5])/100)),
+                   pctdistance=1.1
+                   )
+        axs[2].legend(['Baja',
+                       'Revision'],
+                      loc='best')
+        axs[2].set_title("Porcentaje de revision (calidad baja)")
 
     fig.tight_layout()
-    plt.savefig('/home/david/Documents/results_pdf/categories.png')
+    plt.savefig('/home/david/Documents/results_pdf/categories.png', bbox_inches='tight')
     plt.close()

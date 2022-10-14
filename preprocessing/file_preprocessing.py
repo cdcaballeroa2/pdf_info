@@ -19,7 +19,7 @@ def process_file(filename, folders_list):
     # Abre el PDF para procesarlo
     archivo = pdfplumber.open(filename)
     # Obtencion de texto total
-    pags = {}
+    pags_text = {}
     # Contador de paginas
     k = 1
     # Contador de clasificacion
@@ -47,7 +47,7 @@ def process_file(filename, folders_list):
 
             # Procesa la imagen
             ## Verifica tipo de imagen
-            t_img = image_preprocessing.image_cat(imgFile)
+            t_img = image_preprocessing.image_cat(image_file)
             to_process = True
             while to_process and t_img!=0:
                 if t_img==1:

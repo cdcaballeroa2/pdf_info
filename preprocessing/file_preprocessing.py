@@ -36,7 +36,7 @@ def process_file(filename, folders_list):
         if (len(text_page[0]) > 0) and (not text_page[0].isspace()):
             # Caso de texto digitalizado
             # Guarda el texto en un diccionario
-            pags[k] = text_page[0]
+            pags_text[k] = text_page[0]
             # Guarda la categoria obtenida
             cat_doc[5] += 1
         else:
@@ -81,7 +81,7 @@ def process_file(filename, folders_list):
 
         # Guarda la linea en el TXT
         f.write(f"\n----------------PAGINA {k}---------------\n")
-        f.write(pags[k])
+        f.write(pags_text[k])
         k = k + 1
     f.close()
     return cat_doc, revision_pages, pags_text

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def resume_time(time_list, npage_list, error_cant):
     fig, axs = plt.subplots(2, 2, figsize=(12, 12))
     fig.suptitle(f"Rendimiento / Archivos:{len(npage_list)} / Paginas:{sum(npage_list)} / "
-                 f"Tiempo total: {int(sum(time_list))}s \n"
+                 f"Tiempo total: {int(sum(time_list)/3600)}h {int(sum(time_list)%3600/60)}m\n"
                  f"({round(sum(time_list) / len(npage_list), 4)} s/archivo) "
                  f"({round(sum(time_list) / sum(npage_list), 4)} s/pagina) "
                  f"({round(sum(npage_list) / len(npage_list), 1)} pags/archivo) \n"
@@ -75,7 +75,7 @@ def resume_quality(cat_totals, npage_list):
         'Baja',
         'Revision',
         'Digitalizado'],
-        cat_totals / np.sum(npage_list)
+        cat_totals / len(npage_list)
     )
     axs[1].set_title("Clasificación\npor archivo")
     axs[1].set_xlabel("Categoría")

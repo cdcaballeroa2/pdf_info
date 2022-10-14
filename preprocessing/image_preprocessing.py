@@ -99,7 +99,7 @@ def image_cat(imgFile):
   #Claros
   p_clear = sum(sum(bn_img>250))*100/(bn_img.shape[0]*bn_img.shape[1])
 
-  print('Gris' if isgray(img) else 'RGB')
+  #print('Gris' if isgray(img) else 'RGB')
   if p_white > 99:
     output = "Blanco"
   else:

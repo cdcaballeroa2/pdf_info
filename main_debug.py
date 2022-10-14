@@ -29,7 +29,7 @@ for fil in list_files:
     time0 = time()
     print(f"\nArchivo {fil}, {len(npage_list) + 1}/{len(list_files)}\n")
     try:
-        #Procesa archivo
+        # Procesa archivo
         cat_doc, revision_pages, pags_text = file_preprocessing.process_file(fil, folders_list)
         # Incluye la cantidad de paginas
         npage_list.append(np.sum(cat_doc))
@@ -57,12 +57,12 @@ for fil in list_files:
         # Asigna la carpeta segun la tipologia
         state = "PDF_ERRORS"
     finally:
-        #Obtiene graficas de rendimiento
+        # Obtiene graficas de rendimiento
         err_cants = [error_cant, counter - error_cant]
-        if len(time_list)>0:
+        if len(time_list) > 0:
             plot_performance.resume_time(time_list, npage_list, err_cants)
-            plot_performance.resume_quality(cat_totals,npage_list)
-        #Guarda el PDF donde fue asignado
+            plot_performance.resume_quality(cat_totals, npage_list)
+        # Guarda el PDF donde fue asignado
         f_out = os.sep.join([folders_list[state],
                              os.path.split(fil)[1]]
                             )

@@ -77,7 +77,7 @@ def process_file(filename, folders_list):
             cat_doc[t_img] += 1
 
             # Guarda el texto en el diccionario
-            pags[k] = ff
+            pags_text[k] = ff
 
         # Guarda la linea en el TXT
         f.write(f"\n----------------PAGINA {k}---------------\n")

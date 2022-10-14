@@ -49,6 +49,7 @@ def process_file(filename, folders_list):
             ## Verifica tipo de imagen
             t_img = image_preprocessing.image_cat(image_file)
             to_process = True
+            ff = ''
             while to_process and t_img!=0:
                 if t_img==1:
                     ## Caso en el que es digitalizado

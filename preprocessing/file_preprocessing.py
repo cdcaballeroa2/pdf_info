@@ -4,6 +4,7 @@ import pdfplumber
 from utils import folders
 from tqdm import tqdm
 from preprocessing import text_preprocessing, image_preprocessing
+import numpy as np
 
 
 def process_file(filename, folders_list):
@@ -17,52 +18,70 @@ def process_file(filename, folders_list):
     f = open(os.sep.join([folders_list['TXT_FOLDER'], head + ".txt"]), "w")
     # Abre el PDF para procesarlo
     archivo = pdfplumber.open(filename)
+    # Obtencion de texto total
     pags = {}
+    # Contador de paginas
     k = 1
+    # Contador de clasificacion
+    cat_doc = np.zeros(6)
+    revision_pages = []
     # Lee cada pagina del PDF
     for page in tqdm(archivo.pages):
         # print(f"\n-----------------PAGINA {k}---------------")
-        t0 = time()
         # Extrae el texto de la pagina
         text_page = page.extract_text()
         # Preprocesa el texto
         text_page = text_preprocessing.validate_content(text_page)
-        photo = text_page[1]
+        #photo = text_page[1]
         if (len(text_page[0]) > 0) and (not text_page[0].isspace()):
             # Caso de texto digitalizado
             # Guarda el texto en un diccionario
             pags[k] = text_page[0]
-            # print(text_page[0])
+            # Guarda la categoria obtenida
+            cat_doc[5] += 1
         else:
             # Caso como imagen
             ## Guarda la imagen
             image_file = os.sep.join([folders_list['IMAGE_FOLDER'], head, f"{k}.jpg"])
             page.to_image(resolution=200).save(image_file, format="JPEG")
+
             # Procesa la imagen
             ## Verifica tipo de imagen
+            t_img = image_preprocessing.image_cat(imgFile)
+            to_process = True
+            while to_process and t_img!=0:
+                if t_img==1:
+                    ## Caso en el que es digitalizado
+                    ff = image_preprocessing.image_text(image_file)
+                elif t_img==2:
+                    ## Caso en el que es un escaneo
+                    ## TODO falta el preprocess
+                    ff = image_preprocessing.image_text(image_file)
+                elif t_img==3:
+                    ## Caso en el que es foto
+                    ff = image_preprocessing.image_text(image_file, preprocess=True)
+                elif t_img==4:
+                    ## Caso que pasa a revisión
+                    ff = ''
+                    revision_pages.append(k)
+                    to_process = False
+                    break
+                # Verificar si el texto sigue en blanco
+                if not text_preprocessing.is_valid_text(ff):
+                    t_img += 1
+                else:
+                    to_process = False
+                    break
 
-            ## Caso en el que es digitalizado
+            #Guarda la categoria obtenida
+            cat_doc[t_img] += 1
 
-            ## Caso en el que es un escaneo
-
-            if photo:
-                ## Caso en el que es foto
-                ff = image_preprocessing.image_text(image_file, preprocess=True)
-            else:
-                ff = image_preprocessing.image_text(image_file)
-            # Verificar si el texto esta en blanco
-            if not text_preprocessing.delete_blank_lines(ff):
-                raise ValueError(f"Pagina en blanco, #{k}")
-            # Guarda el dato en el diccionario
+            # Guarda el texto en el diccionario
             pags[k] = ff
-
-        # Registro de tiempo
-        t2 = time()
-        # print(f"\nTiempo: {t2-t0} ")
 
         # Guarda la linea en el TXT
         f.write(f"\n----------------PAGINA {k}---------------\n")
         f.write(pags[k])
         k = k + 1
     f.close()
-    return len(archivo.pages)
+    return cat_doc, revision_pages, pags_text

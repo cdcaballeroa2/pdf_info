@@ -24,5 +24,5 @@ def validate_content(text):
     return ("" if photo else text), photo
 
 
-def delete_blank_lines(text):
+def is_valid_text(text):
     return (not text.isspace()) and len(text) > 0

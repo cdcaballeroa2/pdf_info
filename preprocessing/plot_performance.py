@@ -55,7 +55,7 @@ def resume_quality(cat_totals, npage_list):
                  f"({round(sum(npage_list) / len(npage_list), 1)} pags/archivo) \n")
 
     axs[0].pie(cat_totals,
-               autopct=lambda p: '{p:.2f}% ({v:d})'.format(p=p, v=int(p*sum(cat_totals)/100)),
+               autopct=lambda p: '{p:.2f}%'.format(p=p),
                pctdistance=1.1
                )
     axs[0].legend([
@@ -82,10 +82,10 @@ def resume_quality(cat_totals, npage_list):
     axs[1].set_ylabel("No. paginas")
     axs[1].grid(True)
 
-    if np.sum(cat_totals[3:5]) > 0:
-        axs[2].pie(cat_totals[3:5],
-                   autopct=lambda p: '{p:.2f}% ({v:d})'.format(p=p, v=int(p*sum(cat_totals[3:5])/100)),
-                   pctdistance=1.1
+    if np.sum(cat_totals[1:5]) > 0:
+        axs[2].pie(cat_totals[1:5],
+                   autopct=lambda p: '{p:.2f}%'.format(p=p),
+                   pctdistance=1.2
                    )
         axs[2].legend(['Baja',
                        'Revision'],

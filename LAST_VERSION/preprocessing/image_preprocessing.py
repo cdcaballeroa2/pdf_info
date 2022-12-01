@@ -2,12 +2,13 @@ import cv2 as cv
 import pytesseract
 import cv2
 
+
 def image_text(imgFile, ncuadro=23, par_c=5, preprocess=False):
     """
     Obtiene texto de una imagen binarizada y sin binarizar
     Input: Ruta de ubicacion de la imagen (string)
     """
-    #print(f"----------Imagen: {imgFile}")
+    # print(f"----------Imagen: {imgFile}")
     img = cv.imread(imgFile)
 
     if preprocess:
@@ -20,6 +21,7 @@ def image_text(imgFile, ncuadro=23, par_c=5, preprocess=False):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         txt1 = pytesseract.image_to_string(img)  # , lang="spa")
         return txt1
+
 
 def get_bounds(img0, offset=20, little_dif=False):
     """
@@ -68,6 +70,7 @@ def get_bounds(img0, offset=20, little_dif=False):
     else:
         return revision, roi
 
+
 def isgray(img):
     """
     Verifica si una imagen esta en grises o RGB.
@@ -75,51 +78,53 @@ def isgray(img):
     :return:
     """
     if len(img.shape) < 3: return True
-    if img.shape[2]  == 1: return True
-    b,g,r = img[:,:,0], img[:,:,1], img[:,:,2]
-    if (b==g).all() and (b==r).all(): return True
+    if img.shape[2] == 1: return True
+    b, g, r = img[:, :, 0], img[:, :, 1], img[:, :, 2]
+    if (b == g).all() and (b == r).all(): return True
     return False
 
+
 def image_cat(imgFile):
-  """
+    """
   Obtiene la categoria de una imagen.
   Input: Ruta de ubicacion de la imagen (string)
   """
-  output_type = 0
-  offset = 1
+    output_type = 0
+    offset = 1
 
-  img = cv.imread(imgFile)
+    img = cv.imread(imgFile)
 
-  ##Verificacion
-  bn_img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-  #Oscuros
-  p_dark = sum(sum(bn_img<15))*100/(bn_img.shape[0]*bn_img.shape[1])
-  #Blancos
-  p_white = sum(sum(bn_img==255))*100/(bn_img.shape[0]*bn_img.shape[1])
-  #Claros
-  p_clear = sum(sum(bn_img>250))*100/(bn_img.shape[0]*bn_img.shape[1])
+    ##Verificacion
+    bn_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Oscuros
+    p_dark = sum(sum(bn_img < 15)) * 100 / (bn_img.shape[0] * bn_img.shape[1])
+    # Blancos
+    p_white = sum(sum(bn_img == 255)) * 100 / (bn_img.shape[0] * bn_img.shape[1])
+    # Claros
+    p_clear = sum(sum(bn_img > 250)) * 100 / (bn_img.shape[0] * bn_img.shape[1])
 
-  #print('Gris' if isgray(img) else 'RGB')
-  if p_white > 99:
-    output = "Blanco"
-  else:
-    if (p_white>70 and p_dark>0.7) or p_white>83 or (p_clear>80 and p_clear-p_white>5) or (p_clear-p_white>15 and p_dark>0.7):
-      output = "Calidad optima\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark,2)}"
-      output_type = 1
+    # print('Gris' if isgray(img) else 'RGB')
+    if p_white > 98:
+        output = "Blanco"
     else:
-      if p_clear > 70 and p_clear-p_white>1:
-        output = "Calidad media / Escaneo\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark,2)}"
-        output_type = 2
-      else:
-        output = "Calidad baja / Foto\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark,2)}"
-        little_dif = (p_clear-p_white)<=2
-        if p_white>1:
-          revision, imgf = get_bounds(img,offset, little_dif)
-          if revision:
-            output_type = 4
-          else:
-            output_type = 3
+        if (p_white > 70 and p_dark > 0.7) or p_white > 83 or (p_clear > 80 and p_clear - p_white > 5) or (
+                p_clear - p_white > 15 and p_dark > 0.7):
+            output = "Calidad optima\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark, 2)}"
+            output_type = 1
         else:
-          output_type = 3
+            if p_clear > 70 and p_clear - p_white > 1:
+                output = "Calidad media / Escaneo\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark, 2)}"
+                output_type = 2
+            else:
+                output = "Calidad baja / Foto\n" + f"Blancos {round(p_white)}, Claros {round(p_clear)}, Oscuros {round(p_dark, 2)}"
+                little_dif = (p_clear - p_white) <= 2
+                if p_white > 1:
+                    revision, imgf = get_bounds(img, offset, little_dif)
+                    if revision:
+                        output_type = 4
+                    else:
+                        output_type = 3
+                else:
+                    output_type = 3
 
-  return output_type
+    return output_type

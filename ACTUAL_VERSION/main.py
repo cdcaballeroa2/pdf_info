@@ -18,7 +18,7 @@ MAIN_FOLDER = '/home/david/Documents/pdf_process'
 folders_list = [folder.name for folder in os.scandir(MAIN_FOLDER) if folder.is_dir()]
 
 for folder in folders_list:
-    file_preprocessing.process_folder(os.path.join(MAIN_FOLDER,folder))
+    file_preprocessing.process_folder(MAIN_FOLDER,folder)
 
 print("Tiempo ejecución\n")
 print(f"{len(npage_list)}\t archivos.")

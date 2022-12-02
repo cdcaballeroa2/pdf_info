@@ -1,9 +1,11 @@
+import datetime
 import os
 from time import time
 import pdfplumber
-from utils import folders
+from ACTUAL_VERSION.utils import folders
 from tqdm import tqdm
-from preprocessing import text_preprocessing, image_preprocessing
+from ACTUAL_VERSION.preprocessing import text_preprocessing, image_preprocessing
+from ACTUAL_VERSION.processing import date_processing
 import numpy as np
 import glob
 
@@ -25,6 +27,8 @@ def process_file(filename, folders_list):
     output['pags'] = len(pages) #Cantidad de paginas
     output['text'] = [] #Texto del archivo
     output['types'] = [] #Clasificacion de paginas
+    #Contador de paginas
+    k = 1
 
     # Lee cada pagina del PDF
     for page in tqdm(pages):
@@ -53,8 +57,8 @@ def process_file(filename, folders_list):
                 output['text'] = output['text'] + [""]
                 output['types'] = output['types'] + ['VACIO']
             else:
-                to_process = True
-                ff = ''
+                #to_process = True
+                #ff = ''
                 # Se hace verificacion con alternativa sencilla
                 ff = image_preprocessing.image_text(image_file)
                 if not text_preprocessing.is_valid_text(ff):
@@ -68,11 +72,15 @@ def process_file(filename, folders_list):
     return output
 
 
-def process_folder(folder_person):
+def process_folder(main_folder, subfolder):
+    folder_person = os.path.join(main_folder, subfolder)
     folders_list = folders.initialize_folders(folder_person)
     list_files = glob.glob(os.path.join(folder_person, "*.pdf"))
     output = {}  # Salida de datos
-
+    # Suma de tiempo total trabajado
+    total_time = 0
+    # Bandera de estado de archivos
+    valid = True
     # Obtencion de archivos de persona
     for fil in list_files:
 
@@ -85,9 +93,32 @@ def process_folder(folder_person):
             # Incluye tiempos
             time1 = time()
             output[fil]['time'] = round(time1 - time0, 2)
-            output[fil]['state'] = "PROCESADO"
+
+            # Realiza obtencion de fechas
+
+            output[fil]['experience_data'] = date_processing.get_dates_from_txt(
+                str_data=" ".join(output[fil]['text'])
+            )
+            total_time += output[fil]['experience_data']['experience']
+
+            if output[fil]['experience_data']['experience'] == 0:
+                output[fil]['state'] = "REVISION"
+                output[fil]['error'] = {'type': 'FECHA',
+                                        'description': "No hay rangos de fecha"}
+                valid = False
+            else:
+                output[fil]['state'] = "PROCESADO"
+
         except Exception as ex:
             # Guarda el dato del error en archivo
-            output[fil]['error'] = str(ex)
+            output[fil]['error'] = {'type': 'FECHA',
+                                    'description': str(ex)}
             output[fil]['state'] = "REVISION"
+            valid = False
 
+    output['total_experience'] = total_time
+    output['files'] = len(list_files)
+    output['last_revision'] = datetime.datetime.now()
+    output['revision_status'] = valid
+
+    return output

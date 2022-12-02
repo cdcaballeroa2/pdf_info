@@ -18,7 +18,7 @@ def validate_date(dat):
     return date_time
 
 
-def get_date_formated(f: str, offset: int = 35):
+def get_date_formated(str_data: str, offset: int = 35):
     res = [
         r'(\d{1,4}([\-/])\d{1,2}([\-/])\d{1,4})',
     ]
@@ -47,9 +47,9 @@ def get_date_formated(f: str, offset: int = 35):
 
     date_ranges = {}
     range_counter = 0
-    data = open(f, 'r').read().lower().replace('\n', '')
+    data = str_data.lower().replace('\n', '')
 
-    ## FECHA FORMATEADA
+    # FECHA FORMATEADA
     for rr in res:
         for match in re.finditer(rr, data):
             s = match.start()
@@ -92,7 +92,7 @@ def get_date_formated(f: str, offset: int = 35):
                     if date_text not in date_ranges[text_i]['dates']:
                         date_ranges[text_i]['dates'].append(date_text)
 
-    ## FECHA, VERIFICACION POR MESES
+    # FECHA, VERIFICACION POR MESES
     for rr in month_list:
         for match in re.finditer("(" + rr + ")", data):
             s = match.start()
@@ -134,13 +134,13 @@ def get_date_formated(f: str, offset: int = 35):
                     # verifica el ultimo registro. si tiene coincidencias, lo incluye
                     if range_counter > 0:
                         for text_i in list(date_ranges.keys()):
-                            if date_ranges[text_i]['end'] > start_text and date_ranges[text_i]['start'] < start_text:
+                            if date_ranges[text_i]['end'] > start_text > date_ranges[text_i]['start']:
                                 date_ranges[text_i]['text'] = data[date_ranges[text_i]['start']: end_text]
                                 date_ranges[text_i]['end'] = end_text
                                 date_ranges[text_i]['dates'].append(date_text)
                                 pending = False
 
-                            if date_ranges[text_i]['end'] > end_text and date_ranges[text_i]['start'] < end_text:
+                            if date_ranges[text_i]['end'] > end_text > date_ranges[text_i]['start']:
                                 date_ranges[text_i]['text'] = data[start_text: date_ranges[text_i]['end']]
                                 date_ranges[text_i]['end'] = end_text
                                 date_ranges[text_i]['dates'].append(date_text)
@@ -217,9 +217,14 @@ def get_data_ranges(date_data):
     return date_list, time_work
 
 
-def get_dates_from_txt(f: str, offset: int = 35, print_dates: bool = False):
-    date_data = get_date_formated(f, offset)
+def get_dates_from_txt(str_data: str, offset: int = 35, print_dates: bool = False):
+    date_data = get_date_formated(str_data, offset)
     date_ranges, days_worked = get_data_ranges(date_data)
+    output = {
+        'dates': date_data,
+        'date_ranges': date_ranges,
+        'experience': days_worked
+    }
     if print_dates:
         print(date_ranges)
-    return days_worked
+    return output

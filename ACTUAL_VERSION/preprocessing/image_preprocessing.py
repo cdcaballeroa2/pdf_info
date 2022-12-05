@@ -2,6 +2,7 @@ import cv2 as cv
 import pytesseract
 import cv2
 
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 def image_text(imgFile, ncuadro=23, par_c=5, preprocess=False):
     """
@@ -84,7 +85,7 @@ def isgray(img):
     return False
 
 
-def image_cat(imgFile, precision):
+def image_cat(imgFile, precision: bool = False):
     """
   Obtiene la categoria de una imagen.
   Input: Ruta de ubicacion de la imagen (string)

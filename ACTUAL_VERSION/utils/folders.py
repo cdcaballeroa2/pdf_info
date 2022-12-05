@@ -1,4 +1,6 @@
 import os
+import unicodedata
+import re
 
 
 def initialize_folders(root_folder):
@@ -31,3 +33,13 @@ def verify_folder(dir_folder):
         os.mkdir(dir_folder)
     return dir_folder
 
+
+def normalized_path(cadena):
+    """
+        Normaliza el nombre de una carpeta, antes de crearse.
+        :param cadena:
+        :return:
+    """
+    s = ''.join((c for c in unicodedata.normalize('NFD', cadena) if unicodedata.category(c) != 'Mn'))
+    s = re.sub(r"[^a-zA-Z0-9]", "", s)
+    return s

@@ -9,13 +9,15 @@ from ACTUAL_VERSION.processing import date_processing
 import numpy as np
 import glob
 
+import pprint
+
 
 def process_file(filename, folders_list):
     """
       Función principal, que se encarga de procesar los
       archivos PDF ingresados.
     """
-    head = os.path.split(filename)[1].replace('.pdf', '')
+    head = folders.normalized_path(str(os.path.split(filename)[1].replace('.pdf', '')))
     folder_output = folders.verify_folder(os.sep.join([folders_list['IMAGE_FOLDER'], head]))
     # Se crea el diccionario que contiene la informacion del archivo
     output = {}
@@ -24,14 +26,14 @@ def process_file(filename, folders_list):
     archivo = pdfplumber.open(filename)
     # Contador de paginas
     pages = archivo.pages
-    output['pags'] = len(pages) #Cantidad de paginas
-    output['text'] = [] #Texto del archivo
-    output['types'] = [] #Clasificacion de paginas
-    #Contador de paginas
+    output['pags'] = len(pages)  # Cantidad de paginas
+    output['text'] = []  # Texto del archivo
+    output['types'] = []  # Clasificacion de paginas
+    # Contador de paginas
     k = 1
 
     # Lee cada pagina del PDF
-    for page in tqdm(pages):
+    for page in pages:
         # print(f"\n-----------------PAGINA {k}---------------")
         # Extrae el texto de la pagina
         text_page = page.extract_text()
@@ -57,8 +59,6 @@ def process_file(filename, folders_list):
                 output['text'] = output['text'] + [""]
                 output['types'] = output['types'] + ['VACIO']
             else:
-                #to_process = True
-                #ff = ''
                 # Se hace verificacion con alternativa sencilla
                 ff = image_preprocessing.image_text(image_file)
                 if not text_preprocessing.is_valid_text(ff):
@@ -72,53 +72,63 @@ def process_file(filename, folders_list):
     return output
 
 
-def process_folder(main_folder, subfolder):
+def process_folder(main_folder, subfolder, save_text: bool = False):
     folder_person = os.path.join(main_folder, subfolder)
     folders_list = folders.initialize_folders(folder_person)
     list_files = glob.glob(os.path.join(folder_person, "*.pdf"))
     output = {}  # Salida de datos
-    # Suma de tiempo total trabajado
-    total_time = 0
+    # Rangos de fechas trabajadas
+    date_lst = {}
+    # Contador de rangos de fechas
+    date_counter = 0
     # Bandera de estado de archivos
     valid = True
     # Obtencion de archivos de persona
-    for fil in list_files:
-
+    for fil in tqdm(list_files):
+        fil_key = os.path.split(os.path.splitext(fil)[0])[1]
         # Contador de tiempo para archivo
         time0 = time()
 
         try:
             # Procesa archivo y obtiene textos
-            output[fil] = process_file(fil, folders_list)
+            output[fil_key] = process_file(fil, folders_list)
             # Incluye tiempos
             time1 = time()
-            output[fil]['time'] = round(time1 - time0, 2)
+            output[fil_key]['time'] = round(time1 - time0, 2)
 
             # Realiza obtencion de fechas
 
-            output[fil]['experience_data'] = date_processing.get_dates_from_txt(
-                str_data=" ".join(output[fil]['text'])
+            output[fil_key]['experience_data'] = date_processing.get_dates_from_txt(
+                str_data=" ".join(output[fil_key]['text'])
             )
-            total_time += output[fil]['experience_data']['experience']
 
-            if output[fil]['experience_data']['experience'] == 0:
-                output[fil]['state'] = "REVISION"
-                output[fil]['error'] = {'type': 'FECHA',
-                                        'description': "No hay rangos de fecha"}
+            if output[fil_key]['experience_data']['experience'] == 0:
+                output[fil_key]['state'] = "REVISION"
+                output[fil_key]['error'] = {'type': 'FECHA',
+                                            'description': "No hay rangos de fecha"}
                 valid = False
             else:
-                output[fil]['state'] = "PROCESADO"
+                for el in list(output[fil_key]['experience_data']['dates'].keys()):
+                    date_lst[date_counter] = {'dates': output[fil_key]['experience_data']['dates'][el]['dates'],
+                                              'file': fil}
+                    date_counter += 1
+                output[fil_key]['state'] = "PROCESADO"
 
         except Exception as ex:
             # Guarda el dato del error en archivo
-            output[fil]['error'] = {'type': 'FECHA',
-                                    'description': str(ex)}
-            output[fil]['state'] = "REVISION"
+            output[fil_key]['error'] = {'type': 'FECHA',
+                                        'description': str(ex)}
+            output[fil_key]['state'] = "REVISION"
             valid = False
+        finally:
+            if not save_text:
+                output[fil_key]['text'] = ""
 
-    output['total_experience'] = total_time
-    output['files'] = len(list_files)
-    output['last_revision'] = datetime.datetime.now()
-    output['revision_status'] = valid
+        final_output = {'total_experience': date_processing.get_dates_from_person(date_lst) if date_counter > 0 else 0,
+                        'files': output,
+                        'last_revision': datetime.datetime.now(),
+                        'revision_status': valid}
 
-    return output
+    pprint.pprint(final_output)
+
+    return final_output

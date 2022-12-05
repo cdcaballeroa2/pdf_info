@@ -18,7 +18,7 @@ def validate_date(dat):
     return date_time
 
 
-def get_date_formated(str_data: str, offset: int = 35):
+def get_date_formated(str_data: str, offset: int = 35, save_text: bool = False):
     res = [
         r'(\d{1,4}([\-/])\d{1,2}([\-/])\d{1,4})',
     ]
@@ -166,6 +166,10 @@ def get_date_formated(str_data: str, offset: int = 35):
                 if not dd:
                     date_ranges.pop(text_i)
 
+    if not save_text:
+        for key_date in date_ranges.keys():
+            date_ranges[key_date]['text'] = ""
+
     return date_ranges
 
 
@@ -211,20 +215,35 @@ def get_data_ranges(date_data):
 
     time_work = 0
     for idx in list(date_list.keys()):
-        time_work += (date_list[idx]['end'] - date_list[idx]['start']).days
+        time_work += (date_list[idx]['end'] - date_list[idx]['start']).days + 1
 
-    print(f'Tiempo laborado: {time_work} dias')
     return date_list, time_work
 
 
 def get_dates_from_txt(str_data: str, offset: int = 35, print_dates: bool = False):
     date_data = get_date_formated(str_data, offset)
+    try:
+        date_ranges, days_worked = get_data_ranges(date_data)
+        output = {
+            'dates': date_data,
+            'date_ranges': date_ranges,
+            'experience': days_worked
+        }
+    except Exception as ex:
+        output = {
+            'dates': date_data,
+            'date_ranges': [],
+            'experience': 0
+        }
+    if print_dates:
+        print(date_ranges)
+    return output
+
+
+def get_dates_from_person(date_data: dict):
     date_ranges, days_worked = get_data_ranges(date_data)
     output = {
-        'dates': date_data,
         'date_ranges': date_ranges,
         'experience': days_worked
     }
-    if print_dates:
-        print(date_ranges)
     return output

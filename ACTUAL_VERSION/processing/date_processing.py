@@ -64,14 +64,14 @@ def get_date_formated(str_data: str, offset: int = 35, save_text: bool = False):
                     # guardado de fechas y rango
                     # verifica el ultimo registro. si tiene coincidencias, lo incluye
                     if range_counter > 0:
-                        if date_ranges[range_counter - 1]['end'] > start_text:
-                            date_ranges[range_counter - 1]['text'] = data[date_ranges[range_counter - 1]['start']: e]
-                            date_ranges[range_counter - 1]['end'] = e
-                            date_ranges[range_counter - 1]['dates'].append(validate_date(date_text))
+                        if date_ranges[str(range_counter - 1)]['end'] > start_text:
+                            date_ranges[str(range_counter - 1)]['text'] = data[date_ranges[str(range_counter - 1)]['start']: e]
+                            date_ranges[str(range_counter - 1)]['end'] = e
+                            date_ranges[str(range_counter - 1)]['dates'].append(validate_date(date_text))
                             pending = False
 
                     if pending:
-                        date_ranges[range_counter] = {
+                        date_ranges[str(range_counter)] = {
                             'text': str_all,
                             'start': start_text,
                             'end': e,
@@ -147,7 +147,7 @@ def get_date_formated(str_data: str, offset: int = 35, save_text: bool = False):
                                 pending = False
 
                     if pending:
-                        date_ranges[range_counter] = {
+                        date_ranges[str(range_counter)] = {
                             'text': str_all,
                             'start': start_text,
                             'end': e,
@@ -168,7 +168,8 @@ def get_date_formated(str_data: str, offset: int = 35, save_text: bool = False):
 
     if not save_text:
         for key_date in date_ranges.keys():
-            date_ranges[key_date]['text'] = ""
+            del date_ranges[key_date]['text']
+            #date_ranges[key_date]['text'] = ""
 
     return date_ranges
 
@@ -196,19 +197,19 @@ def get_data_ranges(date_data):
         st = dates_df['start_date'].iloc[idx]
         en = dates_df['end_date'].iloc[idx]
         if idx > 0:
-            if st < date_list[counter]['end']:
-                date_list[counter] = {
-                    'start': date_list[counter]['start'],
+            if st < date_list[str(counter)]['end']:
+                date_list[str(counter)] = {
+                    'start': date_list[str(counter)]['start'],
                     'end': en
                 }
             else:
                 counter += 1
-                date_list[counter] = {
+                date_list[str(counter)] = {
                     'start': st,
                     'end': en
                 }
         else:
-            date_list[counter] = {
+            date_list[str(counter)] = {
                 'start': st,
                 'end': en
             }

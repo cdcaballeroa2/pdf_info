@@ -11,10 +11,7 @@ def initialize_folders(root_folder):
     """
     folders = [
         'IMAGE_FOLDER',
-        'TXT_FOLDER',
-        'PDF_PROCESSED',
-        'PDF_ERRORS',
-        'PDF_REVISION'
+        'TXT_FOLDER'
     ]
 
     pr_folder = {}

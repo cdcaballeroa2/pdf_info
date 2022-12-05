@@ -83,52 +83,60 @@ def process_folder(main_folder, subfolder, save_text: bool = False):
     date_counter = 0
     # Bandera de estado de archivos
     valid = True
+    # Contador de archivos
+    nfile = 0
     # Obtencion de archivos de persona
     for fil in tqdm(list_files):
         fil_key = os.path.split(os.path.splitext(fil)[0])[1]
+        stfile = str(nfile)
         # Contador de tiempo para archivo
         time0 = time()
 
         try:
             # Procesa archivo y obtiene textos
-            output[fil_key] = process_file(fil, folders_list)
+            output[stfile] = process_file(fil, folders_list)
+            output[stfile]['filename'] = fil
             # Incluye tiempos
             time1 = time()
-            output[fil_key]['time'] = round(time1 - time0, 2)
+            output[stfile]['time'] = round(time1 - time0, 2)
 
             # Realiza obtencion de fechas
 
-            output[fil_key]['experience_data'] = date_processing.get_dates_from_txt(
-                str_data=" ".join(output[fil_key]['text'])
+            output[stfile]['experience_data'] = date_processing.get_dates_from_txt(
+                str_data=" ".join(output[stfile]['text'])
             )
 
-            if output[fil_key]['experience_data']['experience'] == 0:
-                output[fil_key]['state'] = "REVISION"
-                output[fil_key]['error'] = {'type': 'FECHA',
-                                            'description': "No hay rangos de fecha"}
+            if output[stfile]['experience_data']['experience'] == 0:
+                output[stfile]['state'] = "REVISION"
+                output[stfile]['error'] = {'type': 'FECHA',
+                                           'description': "No hay rangos de fecha"}
                 valid = False
             else:
-                for el in list(output[fil_key]['experience_data']['dates'].keys()):
-                    date_lst[date_counter] = {'dates': output[fil_key]['experience_data']['dates'][el]['dates'],
+                for el in list(output[stfile]['experience_data']['dates'].keys()):
+                    date_lst[date_counter] = {'dates': output[stfile]['experience_data']['dates'][el]['dates'],
                                               'file': fil}
                     date_counter += 1
-                output[fil_key]['state'] = "PROCESADO"
+                output[stfile]['state'] = "PROCESADO"
 
         except Exception as ex:
             # Guarda el dato del error en archivo
-            output[fil_key]['error'] = {'type': 'FECHA',
-                                        'description': str(ex)}
-            output[fil_key]['state'] = "REVISION"
+            output[stfile]['error'] = {'type': 'FECHA',
+                                       'description': str(ex)}
+            output[stfile]['state'] = "REVISION"
             valid = False
         finally:
             if not save_text:
-                output[fil_key]['text'] = ""
+                f = open(os.sep.join([folders_list['TXT_FOLDER'], fil_key + ".txt"]), "w", encoding="utf-8")
+                f.write("\n".join(output[stfile]['text']))
+                del output[stfile]['text']
+            nfile += 1
 
-        final_output = {'total_experience': date_processing.get_dates_from_person(date_lst) if date_counter > 0 else 0,
-                        'files': output,
-                        'last_revision': datetime.datetime.now(),
-                        'revision_status': valid}
+    final_output = {'total_experience': date_processing.get_dates_from_person(date_lst) if date_counter > 0 else 0,
+                    'files': output,
+                    'last_revision': datetime.datetime.now(),
+                    'revision_status': valid,
+                    '_id': subfolder}
 
-    pprint.pprint(final_output)
+    #pprint.pprint(final_output)
 
     return final_output

@@ -105,6 +105,7 @@ def process_folder(main_folder, subfolder, save_text: bool = False):
             output[stfile]['experience_data'] = date_processing.get_dates_from_txt(
                 str_data=" ".join(output[stfile]['text'])
             )
+            output[stfile]['valid_identification'] = fil in output[stfile]['text']
 
             if output[stfile]['experience_data']['experience'] == 0:
                 output[stfile]['state'] = "REVISION"
@@ -136,7 +137,5 @@ def process_folder(main_folder, subfolder, save_text: bool = False):
                     'last_revision': datetime.datetime.now(),
                     'revision_status': valid,
                     '_id': subfolder}
-
-    #pprint.pprint(final_output)
 
     return final_output

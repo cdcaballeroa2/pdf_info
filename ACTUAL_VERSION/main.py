@@ -18,7 +18,7 @@ MAIN_FOLDER = "C:\DANE_test"
 
 folders_list = [folder.name for folder in os.scandir(MAIN_FOLDER) if folder.is_dir()]
 
-for folder in folders_list:
+for folder in folders_list[19:30]:
     print(f"Procesando carpeta {folder}")
     folder_dict = file_preprocessing.process_folder(MAIN_FOLDER, folder)
     mongo_saving.insert_to_bd(folder_dict)

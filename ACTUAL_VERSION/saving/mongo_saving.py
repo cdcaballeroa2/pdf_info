@@ -6,4 +6,3 @@ collection = db.aspirantes
 
 def insert_to_bd(element: dict):
     x = collection.insert_one(element)
-    print(x)
